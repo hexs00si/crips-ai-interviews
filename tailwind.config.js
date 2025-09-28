@@ -48,8 +48,43 @@ export default {
         'md': '8px',
         'lg': '12px',
       },
+      backgroundImage: {
+        'grid-black': 'linear-gradient(to right, black 1px, transparent 1px), linear-gradient(to bottom, black 1px, transparent 1px)',
+        'dot-black': 'radial-gradient(circle, black 1px, transparent 1px)',
+      },
+      backgroundSize: {
+        'grid': '20px 20px',
+        'dot': '20px 20px',
+      },
+      gridTemplateColumns: {
+        'grid-20': 'repeat(auto-fit, 20px)',
+      },
+      gridTemplateRows: {
+        'grid-20': 'repeat(auto-fit, 20px)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.bg-grid-black\\/\\[0\\.05\\]': {
+          'background-image': 'linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
+          'background-size': '20px 20px',
+          'background-position': '0 0, 0 0',
+        },
+        '.bg-dot-black\\/\\[0\\.2\\]': {
+          'background-image': 'radial-gradient(circle, rgba(0, 0, 0, 0.2) 1px, transparent 1px)',
+          'background-size': '20px 20px',
+          'background-position': '10px 10px',
+        },
+        '.grid-pattern': {
+          'background-image': 'linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)',
+          'background-size': '20px 20px',
+          'background-position': '0 0, 0 0',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 }
 
