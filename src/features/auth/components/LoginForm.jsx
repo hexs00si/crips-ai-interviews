@@ -3,6 +3,8 @@ import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 import { AuthLayout } from "./AuthLayout";
+import { Label } from "@/components/ui/aceternity/label";
+import { Input } from "@/components/ui/aceternity/input";
 import useAuth from "../hooks/useAuth";
 import { validateEmail } from "@/lib/auth";
 
@@ -117,26 +119,21 @@ export function LoginForm() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...resetRegister("email", {
-                    required: "Email is required",
-                    validate: (value) => {
-                      const validation = validateEmail(value);
-                      return validation.isValid || validation.error;
-                    }
-                  })}
-                  type="email"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                  placeholder="john@company.com"
-                />
-              </div>
+              <Label htmlFor="reset-email">Email Address</Label>
+              <Input
+                id="reset-email"
+                {...resetRegister("email", {
+                  required: "Email is required",
+                  validate: (value) => {
+                    const validation = validateEmail(value);
+                    return validation.isValid || validation.error;
+                  }
+                })}
+                type="email"
+                icon={Mail}
+                error={resetErrors.email}
+                placeholder="john@company.com"
+              />
               {resetErrors.email && (
                 <p className="mt-1 text-sm text-red-600">{resetErrors.email.message}</p>
               )}
@@ -199,26 +196,21 @@ export function LoginForm() {
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Mail className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              {...register("email", {
-                required: "Email is required",
-                validate: (value) => {
-                  const validation = validateEmail(value);
-                  return validation.isValid || validation.error;
-                }
-              })}
-              type="email"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-              placeholder="john@company.com"
-            />
-          </div>
+          <Label htmlFor="email">Email Address</Label>
+          <Input
+            id="email"
+            {...register("email", {
+              required: "Email is required",
+              validate: (value) => {
+                const validation = validateEmail(value);
+                return validation.isValid || validation.error;
+              }
+            })}
+            type="email"
+            icon={Mail}
+            error={errors.email}
+            placeholder="john@company.com"
+          />
           {errors.email && (
             <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
           )}
@@ -226,30 +218,28 @@ export function LoginForm() {
 
         {/* Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Password
-          </label>
+          <Label htmlFor="password">Password</Label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Lock className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
+            <Input
+              id="password"
               {...register("password", {
                 required: "Password is required"
               })}
               type={showPassword ? "text" : "password"}
-              className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              icon={Lock}
+              error={errors.password}
               placeholder="Enter your password"
+              className="pr-12"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
               )}
             </button>
           </div>

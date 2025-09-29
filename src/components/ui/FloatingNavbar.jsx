@@ -6,17 +6,7 @@ import { cn } from '@/lib/utils';
 import useAuth from '@/features/auth/hooks/useAuth';
 import { UserMenu } from './UserMenu';
 import { MobileMenu } from './MobileMenu';
-
-const navItems = [
-  {
-    name: 'Home',
-    link: '/'
-  },
-  {
-    name: 'About',
-    link: '/about'
-  }
-];
+import { navItems } from '@/data/navigation';
 
 export function FloatingNavbar({ className }) {
   const [visible, setVisible] = useState(true);
@@ -26,7 +16,7 @@ export function FloatingNavbar({ className }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Handle scroll behavior (no changes needed here)
+  // Handle scroll behavior
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -46,12 +36,12 @@ export function FloatingNavbar({ className }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // Close mobile menu on route change (no changes needed here)
+  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Close mobile menu on escape key & handle body scroll (no changes needed here)
+  // Close mobile menu on escape key & handle body scroll
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -94,19 +84,14 @@ export function FloatingNavbar({ className }) {
               duration: 0.3,
               ease: 'easeInOut'
             }}
-            // --- FIX ---
-            // Changed from 'left-1/2 transform -translate-x-1/2' to a more robust centering method.
-            // Using inset-x-0 and mx-auto with a defined width (w-full max-w-4xl) ensures true centering
-            // and avoids using 'transform', which was causing the dropdown menu to be clipped.
             className={cn(
               'fixed top-4 inset-x-0 w-full max-w-4xl mx-auto z-50',
               className
             )}
           >
+            {/* Main Nav Container - Remove overflow constraints from here */}
             <nav className="relative bg-white/80 backdrop-blur-md border border-white/20 rounded-lg shadow-lg">
-              {/* --- FIX --- */}
-              {/* Restructured the desktop navigation to use a three-part layout with justify-between.
-                  This properly spaces the logo, nav links, and auth section, creating a balanced and centered look. */}
+              {/* Desktop Navigation */}
               <div className="hidden md:flex items-center justify-between relative px-8 py-3">
                 {/* Left Section: Logo */}
                 <div className="flex-1 flex justify-start">
@@ -119,7 +104,6 @@ export function FloatingNavbar({ className }) {
                 </div>
 
                 {/* Center Section: Navigation Items */}
-                {/* This section is absolutely positioned to ensure it's always in the perfect center of the navbar. */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                   <div className="flex items-center space-x-8">
                     {navItems.map((item) => (
@@ -146,7 +130,7 @@ export function FloatingNavbar({ className }) {
                   </div>
                 </div>
 
-                {/* Right Section: Auth */}
+                {/* Right Section: Auth - This is where UserMenu lives */}
                 <div className="flex-1 flex justify-end">
                   {isLoading ? (
                     <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
@@ -165,9 +149,7 @@ export function FloatingNavbar({ className }) {
                 </div>
               </div>
 
-              {/* --- FIX [Mobile Layout] --- */}
-              {/* Restructured to place the hamburger menu on the far left, the logo in the center,
-                  and an invisible placeholder on the right to ensure the logo is perfectly centered. */}
+              {/* Mobile Navigation */}
               <div className="md:hidden flex items-center justify-between px-4 py-3">
                 {/* Left: Mobile Menu Button */}
                 <div className="flex justify-start">
@@ -195,7 +177,6 @@ export function FloatingNavbar({ className }) {
                 </div>
 
                 {/* Right: Placeholder for spacing */}
-                {/* This invisible div balances the hamburger button, forcing the logo into the true center. */}
                 <div className="flex justify-end">
                     <div className="w-9 h-9" />
                 </div>
@@ -205,7 +186,7 @@ export function FloatingNavbar({ className }) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Overlay (no changes needed here) */}
+      {/* Mobile Menu Overlay */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

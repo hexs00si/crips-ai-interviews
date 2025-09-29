@@ -3,6 +3,8 @@ import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, User, Mail, Building, Lock, CheckCircle, AlertCircle } from "lucide-react";
 import { AuthLayout } from "./AuthLayout";
+import { Label } from "@/components/ui/aceternity/label";
+import { Input } from "@/components/ui/aceternity/input";
 import useAuth from "../hooks/useAuth";
 import { validateEmail, validatePassword, validateName, validateCompany, getPasswordStrength } from "@/lib/auth";
 

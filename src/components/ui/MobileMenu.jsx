@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
-import { LogOut, User, Settings, Briefcase } from 'lucide-react';
+import { LogOut, User, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import useAuth from '@/features/auth/hooks/useAuth';
 
@@ -115,15 +115,6 @@ export function MobileMenu({ isOpen, onClose, navItems, isActiveRoute }) {
                       >
                         <User className="h-5 w-5 text-gray-500" />
                         <span>Profile</span>
-                      </Link>
-
-                      <Link
-                        to="/settings"
-                        onClick={onClose}
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-all duration-200"
-                      >
-                        <Settings className="h-5 w-5 text-gray-500" />
-                        <span>Settings</span>
                       </Link>
                     </>
                   )}
