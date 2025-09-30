@@ -15,6 +15,7 @@ import { CandidateAccessPage } from '@/pages/CandidateAccessPage';
 
 // Protected Pages
 import { DashboardPage } from '@/pages/DashboardPage';
+import { InterviewDetailsPage } from '@/pages/InterviewDetailsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { AdminPage } from '@/pages/AdminPage';
 
@@ -66,6 +67,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute allowedRoles={['interviewer', 'admin']}>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/interview/:id"
+          element={
+            <ProtectedRoute allowedRoles={['interviewer', 'admin']}>
+              <InterviewDetailsPage />
             </ProtectedRoute>
           }
         />
