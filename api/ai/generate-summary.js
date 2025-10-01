@@ -8,6 +8,15 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  * Creates comprehensive AI assessment summary for completed interview
  */
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
@@ -21,28 +30,52 @@ export default async function handler(req, res) {
     });
   }
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  );
+  // Environment variable fallback
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.VITE_GOOGLE_GEMINI_API_KEY;
 
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !GEMINI_API_KEY) {
+    console.error('[generate-summary] Missing environment variables');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      code: 'CONFIG_ERROR'
+    });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   try {
-    // Get session details
+    console.log('[generate-summary] Fetching session:', sessionId);
+
+    // Get session details with interview information
     const { data: session, error: sessionError } = await supabase
       .from('interview_sessions')
-      .select('*, interview:interviews(*)')
+      .select('*, interviews!interview_id(*)')
       .eq('id', sessionId)
       .single();
 
-    if (sessionError || !session) {
+    if (sessionError) {
+      console.error('[generate-summary] Session query error:', sessionError);
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found',
+        details: sessionError.message
+      });
+    }
+
+    if (!session) {
+      console.error('[generate-summary] No session found');
       return res.status(404).json({
         success: false,
         error: 'Session not found'
       });
     }
+
+    console.log('[generate-summary] Session found, fetching responses...');
 
     // Get all responses
     const { data: responses, error: responsesError } = await supabase
@@ -89,7 +122,7 @@ export default async function handler(req, res) {
     );
 
     // Generate detailed summary using Gemini
-    const roles = session.interview?.roles?.join(', ') || 'Full Stack Developer';
+    const roles = session.interviews?.roles?.join(', ') || 'Full Stack Developer';
 
     const summaryPrompt = `You are an expert technical interviewer providing a comprehensive assessment summary.
 
@@ -168,11 +201,13 @@ Keep the tone professional, balanced, and constructive. Format with clear markdo
       }
     });
   } catch (error) {
-    console.error('Generate summary error:', error);
+    console.error('[generate-summary] Error:', error);
+    console.error('[generate-summary] Error stack:', error.stack);
     return res.status(500).json({
       success: false,
       error: 'Failed to generate summary',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
