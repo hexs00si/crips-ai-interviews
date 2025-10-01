@@ -44,10 +44,23 @@ export default async function handler(req, res) {
       });
     }
 
-    // Extract correct answer from metadata
-    const correctAnswer = response.question_metadata?.correct_answer;
-    const options = response.question_metadata?.options;
-    const explanation = response.question_metadata?.explanation;
+    // Parse question data from JSON string
+    let questionData;
+    try {
+      questionData = JSON.parse(response.question_text);
+    } catch (parseError) {
+      console.error('Failed to parse question data:', parseError);
+      return res.status(500).json({
+        success: false,
+        error: 'Question data is corrupted'
+      });
+    }
+
+    // Extract correct answer from parsed data
+    const correctAnswer = questionData.correct_answer;
+    const options = questionData.options;
+    const explanation = questionData.explanation;
+    const questionText = questionData.question;
 
     if (!correctAnswer || !options) {
       return res.status(500).json({
@@ -63,7 +76,7 @@ export default async function handler(req, res) {
     // Generate AI feedback using Gemini
     const feedbackPrompt = `You are a technical interviewer providing constructive feedback.
 
-Question: ${response.question_text}
+Question: ${questionText}
 Difficulty: ${response.question_difficulty}
 
 Options:

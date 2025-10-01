@@ -8,6 +8,15 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  * Generates a multiple-choice question based on session context and difficulty
  */
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({
       success: false,
@@ -17,10 +26,31 @@ export default async function handler(req, res) {
 
   const { sessionId, questionNumber, difficulty } = req.body;
 
+  console.log('[generate-question] Request received:', { sessionId, questionNumber, difficulty });
+
   if (!sessionId || !questionNumber || !difficulty) {
     return res.status(400).json({
       success: false,
       error: 'Missing required fields: sessionId, questionNumber, difficulty'
+    });
+  }
+
+  // Verify environment variables
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error('[generate-question] Missing Supabase credentials');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      code: 'CONFIG_ERROR'
+    });
+  }
+
+  if (!process.env.GOOGLE_GEMINI_API_KEY) {
+    console.error('[generate-question] Missing Gemini API key');
+    return res.status(500).json({
+      success: false,
+      error: 'AI service not configured',
+      code: 'AI_CONFIG_ERROR'
     });
   }
 
@@ -34,18 +64,35 @@ export default async function handler(req, res) {
 
   try {
     // Verify session and get interview details
+    console.log('[generate-question] Fetching session:', sessionId);
+
     const { data: session, error: sessionError } = await supabase
       .from('interview_sessions')
       .select('*, interviews!interview_id(*)')
       .eq('id', sessionId)
       .single();
 
-    if (sessionError || !session) {
+    if (sessionError) {
+      console.error('[generate-question] Session query error:', sessionError);
+      return res.status(404).json({
+        success: false,
+        error: 'Invalid session ID',
+        details: sessionError.message
+      });
+    }
+
+    if (!session) {
+      console.error('[generate-question] No session found');
       return res.status(404).json({
         success: false,
         error: 'Invalid session ID'
       });
     }
+
+    console.log('[generate-question] Session found:', {
+      sessionId: session.id,
+      hasInterview: !!session.interviews
+    });
 
     // Check if question already exists (for session recovery)
     const { data: existingQuestion } = await supabase
@@ -56,12 +103,35 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (existingQuestion) {
-      // Return existing question from cache
-      return res.status(200).json({
-        success: true,
-        question: existingQuestion,
-        fromCache: true
-      });
+      console.log('[generate-question] Returning cached question');
+      // Parse the stored JSON data
+      let parsedData;
+      try {
+        parsedData = JSON.parse(existingQuestion.question_text);
+      } catch (e) {
+        console.error('[generate-question] Failed to parse cached question:', e);
+        // If parsing fails, fall through to generate new question
+        parsedData = null;
+      }
+
+      if (parsedData) {
+        // Return existing question from cache
+        return res.status(200).json({
+          success: true,
+          question: {
+            id: existingQuestion.id,
+            session_id: existingQuestion.session_id,
+            question_number: existingQuestion.question_number,
+            question_text: parsedData.question,
+            question_difficulty: existingQuestion.question_difficulty,
+            time_limit: existingQuestion.time_limit,
+            options: parsedData.options,
+            correct_answer: parsedData.correct_answer,
+            explanation: parsedData.explanation
+          },
+          fromCache: true
+        });
+      }
     }
 
     // Time allocation based on difficulty
@@ -132,33 +202,41 @@ Make it practical and relevant to real-world ${roles} development.`;
     }
 
     // Save question to database
+    // Note: We'll store the full question data in ai_feedback temporarily
+    // and store options/correct answer in the question_text as JSON for now
+    // This is a workaround until question_metadata column is added
+    const questionFullData = {
+      question: questionData.question,
+      options: {
+        A: questionData.option_a,
+        B: questionData.option_b,
+        C: questionData.option_c,
+        D: questionData.option_d
+      },
+      correct_answer: correctAnswer,
+      explanation: questionData.explanation
+    };
+
+    console.log('[generate-question] Saving question to database');
+
     const { data: savedQuestion, error: saveError } = await supabase
       .from('interview_responses')
       .insert({
         session_id: sessionId,
         question_number: questionNumber,
-        question_text: questionData.question,
+        question_text: JSON.stringify(questionFullData), // Store full data as JSON string
         question_difficulty: difficulty,
-        time_limit: timeAllocation[difficulty],
-        // Store metadata as JSONB
-        question_metadata: {
-          options: {
-            A: questionData.option_a,
-            B: questionData.option_b,
-            C: questionData.option_c,
-            D: questionData.option_d
-          },
-          correct_answer: correctAnswer,
-          explanation: questionData.explanation
-        }
+        time_limit: timeAllocation[difficulty]
       })
       .select()
       .single();
 
     if (saveError) {
-      console.error('Database save error:', saveError);
+      console.error('[generate-question] Database save error:', saveError);
       throw saveError;
     }
+
+    console.log('[generate-question] Question saved successfully');
 
     // Return question with options
     return res.status(200).json({
@@ -167,7 +245,7 @@ Make it practical and relevant to real-world ${roles} development.`;
         id: savedQuestion.id,
         session_id: savedQuestion.session_id,
         question_number: savedQuestion.question_number,
-        question_text: savedQuestion.question_text,
+        question_text: questionData.question,
         question_difficulty: savedQuestion.question_difficulty,
         time_limit: savedQuestion.time_limit,
         options: {
@@ -183,11 +261,13 @@ Make it practical and relevant to real-world ${roles} development.`;
     });
   } catch (error) {
     console.error('Question generation error:', error);
+    console.error('Error stack:', error.stack);
     return res.status(500).json({
       success: false,
       error: 'Failed to generate question. Please try again.',
       code: 'AI_ERROR',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
