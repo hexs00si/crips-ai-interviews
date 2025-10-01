@@ -8,6 +8,15 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
  * Evaluates candidate's answer and provides feedback using Gemini AI
  */
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
@@ -21,12 +30,22 @@ export default async function handler(req, res) {
     });
   }
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  );
+  // Environment variable fallback
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.VITE_GOOGLE_GEMINI_API_KEY;
 
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !GEMINI_API_KEY) {
+    console.error('[submit-answer] Missing environment variables');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      code: 'CONFIG_ERROR'
+    });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
   try {

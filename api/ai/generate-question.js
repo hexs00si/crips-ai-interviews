@@ -35,31 +35,36 @@ export default async function handler(req, res) {
     });
   }
 
-  // Verify environment variables
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error('[generate-question] Missing Supabase credentials');
+  // Environment variable fallback - check both prefixed and non-prefixed versions
+  // Vercel serverless functions use non-prefixed, but local might use VITE_ prefix
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.VITE_GOOGLE_GEMINI_API_KEY;
+
+  // Detailed environment variable validation
+  const missingVars = [];
+  if (!SUPABASE_URL) missingVars.push('SUPABASE_URL');
+  if (!SUPABASE_ANON_KEY) missingVars.push('SUPABASE_ANON_KEY');
+  if (!GEMINI_API_KEY) missingVars.push('GOOGLE_GEMINI_API_KEY');
+
+  if (missingVars.length > 0) {
+    const errorMsg = `Missing environment variables: ${missingVars.join(', ')}`;
+    console.error('[generate-question]', errorMsg);
+    console.error('[generate-question] Available env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('GEMINI')));
+
     return res.status(500).json({
       success: false,
       error: 'Server configuration error',
-      code: 'CONFIG_ERROR'
+      code: 'CONFIG_ERROR',
+      details: errorMsg,
+      hint: 'Please check Vercel environment variables dashboard'
     });
   }
 
-  if (!process.env.GOOGLE_GEMINI_API_KEY) {
-    console.error('[generate-question] Missing Gemini API key');
-    return res.status(500).json({
-      success: false,
-      error: 'AI service not configured',
-      code: 'AI_CONFIG_ERROR'
-    });
-  }
+  console.log('[generate-question] Environment variables validated successfully');
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  );
-
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
   try {
