@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   }
 
   // Validate phone format (basic validation)
-  const phonePattern = /^[\d\s\+\-\(\)]{10,20}$/;
+  const phonePattern = /^[\d\s+()\-]{10,20}$/;
   if (!phonePattern.test(phone)) {
     return res.status(400).json({
       success: false,

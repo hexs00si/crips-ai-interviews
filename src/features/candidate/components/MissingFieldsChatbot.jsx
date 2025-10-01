@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { MessageCircle, Send, Loader2, CheckCircle } from 'lucide-react';
+import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import { candidateInterview } from '@/data/candidateInterview';
 
 export function MissingFieldsChatbot({ missingFields, extractedFields, onComplete }) {
@@ -73,7 +72,7 @@ export function MissingFieldsChatbot({ missingFields, extractedFields, onComplet
     }
     if (field === 'phone') {
       // Allow various phone formats
-      const phoneRegex = /^[\d\s\-\+\(\)]{7,}$/;
+      const phoneRegex = /^[\d\s+()\-]{7,}$/;
       return phoneRegex.test(value);
     }
     if (field === 'name') {

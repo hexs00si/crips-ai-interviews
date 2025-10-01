@@ -66,7 +66,7 @@ Your task: Analyze the candidate's message and respond appropriately. If they've
 
     // Extract email
     if (missingFields.includes('email')) {
-      const emailMatch = userMessage.match(/[\w\.-]+@[\w\.-]+\.\w+/);
+      const emailMatch = userMessage.match(/[\w.-]+@[\w.-]+\.\w+/);
       if (emailMatch) {
         extractedInfo.email = emailMatch[0];
       }
@@ -74,7 +74,7 @@ Your task: Analyze the candidate's message and respond appropriately. If they've
 
     // Extract phone
     if (missingFields.includes('phone')) {
-      const phoneMatch = userMessage.match(/[\+\d][\d\s\-\(\)]{9,19}/);
+      const phoneMatch = userMessage.match(/[+\d][\d\s()\-]{9,19}/);
       if (phoneMatch) {
         extractedInfo.phone = phoneMatch[0].trim();
       }
@@ -84,13 +84,13 @@ Your task: Analyze the candidate's message and respond appropriately. If they've
     if (missingFields.includes('name')) {
       const words = userMessage.split(/\s+/);
       const potentialName = words
-        .filter(w => w.length > 1 && !/[@\d\+\-\(\)]/.test(w))
+        .filter(w => w.length > 1 && !/[@\d+\-()]/.test(w))
         .slice(0, 3)
         .join(' ');
 
       if (potentialName.length >= 2 && potentialName.length <= 50) {
         // Only extract if it looks like a name (starts with capital, no special chars)
-        if (/^[A-Z][a-zA-Z\s\-\']+$/.test(potentialName)) {
+        if (/^[A-Z][a-zA-Z\s\-']+$/.test(potentialName)) {
           extractedInfo.name = potentialName;
         }
       }

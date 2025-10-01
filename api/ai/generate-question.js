@@ -183,7 +183,7 @@ Make it practical and relevant to real-world ${roles} development.`;
     let questionData;
     try {
       questionData = JSON.parse(cleanText);
-    } catch (parseError) {
+    } catch (_parseError) {
       console.error('Failed to parse Gemini response:', text);
       throw new Error('Invalid JSON response from AI');
     }
