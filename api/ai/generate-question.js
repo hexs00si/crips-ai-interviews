@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     // Verify session and get interview details
     const { data: session, error: sessionError } = await supabase
       .from('interview_sessions')
-      .select('*, interview:interviews(*)')
+      .select('*, interviews!interview_id(*)')
       .eq('id', sessionId)
       .single();
 
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
     };
 
     // Get roles from interview
-    const roles = session.interview?.roles?.join(', ') || 'Full Stack Developer (React/Node.js)';
+    const roles = session.interviews?.roles?.join(', ') || 'Full Stack Developer (React/Node.js)';
 
     // Generate question using Gemini
     const prompt = `You are an expert technical interviewer. Generate a ${difficulty} level multiple-choice question for a ${roles} position.
