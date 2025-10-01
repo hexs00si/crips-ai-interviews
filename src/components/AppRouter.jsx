@@ -6,12 +6,18 @@ import { ConnectionTest } from './ConnectionTest';
 // Auth Pages
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { SignupForm } from '@/features/auth/components/SignupForm';
+import { UnifiedAuthPage } from '@/pages/UnifiedAuthPage';
 
 // Public Pages
 import { LandingPage } from '@/pages/LandingPage';
 import { AboutPage } from '@/pages/AboutPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
-import { CandidateAccessPage } from '@/pages/CandidateAccessPage';
+
+// Candidate Pages
+import { CandidateAccessPage } from '@/features/candidate/pages/CandidateAccessPage';
+import { CandidateInfoPage } from '@/features/candidate/pages/CandidateInfoPage';
+import { InterviewPage } from '@/features/candidate/pages/InterviewPage';
+import { ResultsPage } from '@/features/candidate/pages/ResultsPage';
 
 // Protected Pages
 import { DashboardPage } from '@/pages/DashboardPage';
@@ -37,7 +43,17 @@ export function AppRouter() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
 
-        {/* Auth Routes - Login & Signup */}
+        {/* Unified Auth Route - Primary Entry Point */}
+        <Route
+          path="/auth"
+          element={
+            <PublicRoute>
+              <UnifiedAuthPage />
+            </PublicRoute>
+          }
+        />
+
+        {/* Legacy Auth Routes - Kept for Backward Compatibility */}
         <Route
           path="/login"
           element={
@@ -58,8 +74,14 @@ export function AppRouter() {
         {/* Password Reset */}
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Candidate Access */}
-        <Route path="/interview/:accessCode?" element={<CandidateAccessPage />} />
+        {/* Candidate Routes - Interview Flow */}
+        <Route path="/candidate" element={<CandidateAccessPage />} />
+        <Route path="/candidate/info" element={<CandidateInfoPage />} />
+        <Route path="/candidate/interview" element={<InterviewPage />} />
+        <Route path="/candidate/results" element={<ResultsPage />} />
+
+        {/* Legacy Candidate Access (redirect to /candidate) */}
+        <Route path="/interview/:accessCode?" element={<Navigate to="/candidate" replace />} />
 
         {/* Protected Routes - Dashboard & Profile */}
         <Route

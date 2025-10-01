@@ -60,20 +60,14 @@ export function Hero() {
             transition={animations.buttons.transition}
           >
             <RainbowButton
-              onClick={() => {
-                // Navigation will be implemented later
-                console.log(`Navigate to: ${buttons.primary.href}`);
-              }}
+              onClick={() => window.location.href = '/auth'}
               className="min-w-[200px] sm:min-w-[220px]"
             >
               {buttons.primary.text}
             </RainbowButton>
 
             <RainbowButton
-              onClick={() => {
-                // Navigation will be implemented later
-                console.log(`Navigate to: ${buttons.secondary.href}`);
-              }}
+              onClick={() => window.location.href = buttons.secondary.href}
               className="min-w-[200px] sm:min-w-[220px]"
               style={{
                 background: `linear-gradient(135deg,

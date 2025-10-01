@@ -18,7 +18,7 @@ export function MobileMenu({ isOpen, onClose, navItems, isActiveRoute }) {
 
   const handleLoginClick = () => {
     onClose();
-    navigate('/login');
+    navigate('/auth');
   };
 
   const fullName = getFullName();

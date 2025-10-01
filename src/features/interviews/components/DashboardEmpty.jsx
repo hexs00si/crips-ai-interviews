@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Sparkles, Zap, Shield, BarChart3 } from 'lucide-react';
 import { RainbowButton } from '@/components/ui/rainbow-button';
 import { GridBackground } from '@/components/ui/aceternity/grid-background';

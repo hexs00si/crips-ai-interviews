@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Search, Filter, ChevronDown, Mail, Calendar, Award } from 'lucide-react';
 import { interviewData } from '@/data/interviews';
 

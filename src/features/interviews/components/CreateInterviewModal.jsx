@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { useForm } from 'react-hook-form';
 import { X, Plus, Trash2, CheckCircle, Copy, Check } from 'lucide-react';
 import { Label } from '@/components/ui/aceternity/label';

@@ -63,7 +63,7 @@ export function FloatingNavbar({ className }) {
   }, [isMobileMenuOpen]);
 
   const handleLoginClick = () => {
-    navigate('/login');
+    navigate('/auth');
   };
 
   const isActiveRoute = (path) => {
