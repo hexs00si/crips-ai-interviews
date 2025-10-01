@@ -6,6 +6,7 @@ import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { InterviewResults } from '../components/InterviewResults';
 import { Loader2, AlertCircle, Home } from 'lucide-react';
 import useCandidateStore from '@/stores/candidateStore';
+import { supabase } from '@/lib/supabase';
 
 export function ResultsPage() {
   const navigate = useNavigate();
@@ -18,28 +19,38 @@ export function ResultsPage() {
 
   // Redirect if no session
   useEffect(() => {
+    console.log('[ResultsPage] Mounted with session:', session?.id);
+
     if (!session || !interview) {
+      console.log('[ResultsPage] No session, redirecting to /candidate');
       navigate('/candidate');
       return;
     }
 
     loadResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, interview, navigate]);
 
   const loadResults = async () => {
+    console.log('[ResultsPage] Loading results for session:', session?.id);
     setIsLoading(true);
     setError(null);
 
     try {
       // First, get all responses for this session
+      console.log('[ResultsPage] Fetching responses from database...');
       const { data: responsesData, error: responsesError } = await supabase
         .from('interview_responses')
         .select('*')
         .eq('session_id', session.id)
         .order('question_number', { ascending: true });
 
-      if (responsesError) throw responsesError;
+      if (responsesError) {
+        console.error('[ResultsPage] Responses query error:', responsesError);
+        throw responsesError;
+      }
 
+      console.log('[ResultsPage] Found', responsesData?.length, 'responses');
       setResponses(responsesData);
 
       // Check if all questions are answered
@@ -51,6 +62,7 @@ export function ResultsPage() {
 
       // Generate AI summary if not already generated
       if (!session.ai_summary) {
+        console.log('[ResultsPage] Generating AI summary...');
         const summaryResponse = await fetch('/api/ai/generate-summary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -60,6 +72,8 @@ export function ResultsPage() {
         });
 
         const summaryData = await summaryResponse.json();
+
+        console.log('[ResultsPage] Summary response:', summaryData);
 
         if (!summaryData.success) {
           throw new Error(summaryData.error || 'Failed to generate summary');
@@ -71,6 +85,7 @@ export function ResultsPage() {
         // Update session with completion
         await useCandidateStore.getState().updateSessionStatus('completed');
       } else {
+        console.log('[ResultsPage] Using existing summary from session');
         // Use existing summary
         setSummary(session.ai_summary);
 
@@ -112,9 +127,11 @@ export function ResultsPage() {
         });
       }
 
+      console.log('[ResultsPage] Results loaded successfully');
       setIsLoading(false);
     } catch (error) {
-      console.error('Load results error:', error);
+      console.error('[ResultsPage] Load results error:', error);
+      console.error('[ResultsPage] Error stack:', error.stack);
       setError(error.message);
       setIsLoading(false);
     }
@@ -233,6 +250,3 @@ export function ResultsPage() {
     </div>
   );
 }
-
-// Import supabase for direct query
-import { supabase } from '@/lib/supabase';
