@@ -5,7 +5,7 @@ export const heroData = {
     primary: {
       text: "Try It",
       variant: "primary",
-      href: "/get-started"
+      href: "/auth" // FIXED: Changed from /get-started to /auth (correct route)
     },
     secondary: {
       text: "Learn More",

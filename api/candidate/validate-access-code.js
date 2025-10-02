@@ -59,54 +59,29 @@ export default async function handler(req, res) {
       });
     }
 
-    // Check if session already exists for this interview
-    const { data: existingSession, error: sessionCheckError } = await supabase
+    // CRITICAL FIX: Always create a NEW session for each access code validation
+    // Business Logic: Multiple candidates should be able to use the same access code
+    // Each candidate gets their own unique session
+    // Session resumption is handled by localStorage on client side
+
+    // Create new session for this candidate
+    const { data: newSession, error: createError } = await supabase
       .from('interview_sessions')
-      .select('*')
-      .eq('interview_id', interview.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .insert({
+        interview_id: interview.id,
+        status: 'not_started',
+        current_question_index: 0,
+        total_score: 0,
+        last_activity_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
-    if (sessionCheckError && sessionCheckError.code !== 'PGRST116') {
-      throw sessionCheckError;
+    if (createError) {
+      throw createError;
     }
 
-    // If session exists and completed, don't allow restart
-    if (existingSession && existingSession.status === 'completed') {
-      return res.status(400).json({
-        success: false,
-        error: 'This interview has already been completed.',
-        sessionId: existingSession.id
-      });
-    }
-
-    // Create or return existing session
-    let session;
-
-    if (existingSession && existingSession.status !== 'expired') {
-      // Return existing session
-      session = existingSession;
-    } else {
-      // Create new session
-      const { data: newSession, error: createError } = await supabase
-        .from('interview_sessions')
-        .insert({
-          interview_id: interview.id,
-          status: 'not_started',
-          current_question_index: 0,
-          total_score: 0,
-          last_activity_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        throw createError;
-      }
-
-      session = newSession;
-    }
+    const session = newSession;
 
     // Return success with session and interview details
     return res.status(200).json({
@@ -130,9 +105,7 @@ export default async function handler(req, res) {
         custom_questions: interview.custom_questions,
         status: interview.status
       },
-      message: existingSession
-        ? 'Welcome back! You have an existing session.'
-        : 'Access code validated successfully.'
+      message: 'Access code validated successfully. New session created.'
     });
   } catch (error) {
     console.error('Access code validation error:', error);

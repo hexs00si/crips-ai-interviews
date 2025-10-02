@@ -52,8 +52,28 @@ export function ResultsPage() {
 
       console.log('[ResultsPage] Found', responsesData?.length, 'responses');
 
+      // CRITICAL FIX: Remove duplicates - keep only questions 1-6 (one per question_number)
+      // Sometimes duplicate questions are created in database, deduplicate by question_number
+      const uniqueResponses = responsesData.reduce((acc, response) => {
+        // Only keep questions 1-6 and deduplicate by question_number
+        if (response.question_number >= 1 && response.question_number <= 6) {
+          const existing = acc.find(r => r.question_number === response.question_number);
+          if (!existing) {
+            acc.push(response);
+          } else {
+            console.warn('[ResultsPage] Duplicate question_number found:', response.question_number);
+          }
+        }
+        return acc;
+      }, []);
+
+      // Sort by question_number to ensure correct order
+      uniqueResponses.sort((a, b) => a.question_number - b.question_number);
+
+      console.log('[ResultsPage] After deduplication:', uniqueResponses.length, 'unique questions (expected 6)');
+
       // Parse JSON fields if they are strings
-      const parsedResponses = responsesData.map(response => {
+      const parsedResponses = uniqueResponses.map(response => {
         try {
           return {
             ...response,
@@ -70,8 +90,8 @@ export function ResultsPage() {
       console.log('[ResultsPage] Parsed responses:', parsedResponses);
       setResponses(parsedResponses);
 
-      // Check if all questions are answered
-      const answeredCount = responsesData.filter(r => r.candidate_answer).length;
+      // Check if all questions are answered (should be exactly 6)
+      const answeredCount = uniqueResponses.filter(r => r.candidate_answer).length;
 
       if (answeredCount < 6) {
         throw new Error(`Interview incomplete. Only ${answeredCount}/6 questions answered.`);
@@ -106,17 +126,18 @@ export function ResultsPage() {
         // Use existing summary
         setSummary(session.ai_summary);
 
-        // Calculate metrics from responses
-        const totalScore = responsesData.reduce((sum, r) => sum + (r.ai_score || 0), 0);
-        const maxScore = 60;
+        // CRITICAL FIX: Calculate metrics from UNIQUE responses only (not duplicates)
+        const totalScore = uniqueResponses.reduce((sum, r) => sum + (r.ai_score || 0), 0);
+        const maxScore = 60; // 6 questions × 10 points each
         const percentage = Math.round((totalScore / maxScore) * 100);
 
-        const easyQuestions = responsesData.filter(r => r.question_difficulty === 'easy');
-        const mediumQuestions = responsesData.filter(r => r.question_difficulty === 'medium');
-        const hardQuestions = responsesData.filter(r => r.question_difficulty === 'hard');
+        // Filter by difficulty from unique responses
+        const easyQuestions = uniqueResponses.filter(r => r.question_difficulty === 'easy');
+        const mediumQuestions = uniqueResponses.filter(r => r.question_difficulty === 'medium');
+        const hardQuestions = uniqueResponses.filter(r => r.question_difficulty === 'hard');
 
         const avgTimeTaken = Math.round(
-          responsesData.reduce((sum, r) => sum + (r.time_taken || 0), 0) / responsesData.length
+          uniqueResponses.reduce((sum, r) => sum + (r.time_taken || 0), 0) / uniqueResponses.length
         );
 
         setMetrics({
@@ -127,17 +148,17 @@ export function ResultsPage() {
             easy: {
               correct: easyQuestions.filter(r => r.ai_score === 10).length,
               score: easyQuestions.reduce((sum, r) => sum + (r.ai_score || 0), 0),
-              total: 20
+              total: 20 // 2 questions × 10 points each
             },
             medium: {
               correct: mediumQuestions.filter(r => r.ai_score === 10).length,
               score: mediumQuestions.reduce((sum, r) => sum + (r.ai_score || 0), 0),
-              total: 20
+              total: 20 // 2 questions × 10 points each
             },
             hard: {
               correct: hardQuestions.filter(r => r.ai_score === 10).length,
               score: hardQuestions.reduce((sum, r) => sum + (r.ai_score || 0), 0),
-              total: 20
+              total: 20 // 2 questions × 10 points each
             }
           },
           avgTimeTaken

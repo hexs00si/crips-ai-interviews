@@ -128,12 +128,13 @@ export function LoginFormContent() {
       <div className="text-center">
         <p className="text-sm text-gray-600">
           Don't have an account?{' '}
-          <a
-            href="/signup"
-            className="font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          <button
+            type="button"
+            onClick={() => navigate('/signup')}
+            className="font-medium text-primary-600 hover:text-primary-700 transition-colors underline cursor-pointer"
           >
             Sign up
-          </a>
+          </button>
         </p>
       </div>
     </form>

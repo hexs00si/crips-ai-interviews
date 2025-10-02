@@ -1,10 +1,12 @@
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { useNavigate } from "react-router-dom";
 import { GridBackground } from "@/components/ui/aceternity/grid-background";
 import { BackgroundBeams } from "@/components/ui/aceternity/background-beams";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { heroData } from "@/data/hero";
 
 export function Hero() {
+  const navigate = useNavigate();
   const { heading, subheading, buttons, animations, responsive } = heroData;
 
   return (
@@ -60,14 +62,14 @@ export function Hero() {
             transition={animations.buttons.transition}
           >
             <RainbowButton
-              onClick={() => window.location.href = '/auth'}
+              onClick={() => navigate(buttons.primary.href)}
               className="min-w-[200px] sm:min-w-[220px]"
             >
               {buttons.primary.text}
             </RainbowButton>
 
             <RainbowButton
-              onClick={() => window.location.href = buttons.secondary.href}
+              onClick={() => navigate(buttons.secondary.href)}
               className="min-w-[200px] sm:min-w-[220px]"
               style={{
                 background: `linear-gradient(135deg,
