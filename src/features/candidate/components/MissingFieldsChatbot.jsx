@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import { candidateInterview } from '@/data/candidateInterview';
 
