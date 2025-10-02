@@ -32,10 +32,19 @@ export function InterviewPage() {
   // Enable tab visibility tracking
   useTabVisibility();
 
-  // Redirect if no session
+  // Redirect if no session or check status
   useEffect(() => {
     if (!session || !interview) {
       navigate('/candidate');
+      return;
+    }
+
+    console.log('[InterviewPage] Session status:', session.status);
+
+    // If already completed, redirect to results
+    if (session.status === 'completed') {
+      console.log('[InterviewPage] → Interview completed, redirecting to results');
+      navigate('/candidate/results', { replace: true });
       return;
     }
 
@@ -43,7 +52,7 @@ export function InterviewPage() {
     if (session.status !== 'in_progress') {
       updateSessionStatus('in_progress');
     }
-  }, [session, interview, navigate]);
+  }, [session, interview, navigate, updateSessionStatus]);
 
   // Pause timer when tab is not active
   useEffect(() => {
@@ -216,6 +225,7 @@ export function InterviewPage() {
                   onSubmit={handleSubmitAnswer}
                   timeRemaining={timeRemaining}
                   onTimeUpdate={setTimeRemaining}
+                  isTabActive={isTabActive}
                 />
               </motion.div>
             ) : null}

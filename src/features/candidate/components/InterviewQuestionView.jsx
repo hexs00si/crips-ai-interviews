@@ -3,15 +3,22 @@ import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Clock, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { candidateInterview } from '@/data/candidateInterview';
 
-export function InterviewQuestionView({ question, onSubmit, timeRemaining, onTimeUpdate }) {
+export function InterviewQuestionView({ question, onSubmit, timeRemaining, onTimeUpdate, isTabActive = true }) {
   const { questionView } = candidateInterview;
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  // Timer effect
+  // Timer effect - stops when submitting, showing feedback, or tab is inactive
   useEffect(() => {
+    // Stop timer if already showing feedback, currently submitting, or tab is not active
+    if (showFeedback || isSubmitting || !isTabActive) {
+      console.log('[InterviewQuestionView] Timer paused:', { showFeedback, isSubmitting, isTabActive });
+      return;
+    }
+
+    // Auto-submit when time runs out
     if (timeRemaining <= 0) {
       handleAutoSubmit();
       return;
@@ -22,7 +29,7 @@ export function InterviewQuestionView({ question, onSubmit, timeRemaining, onTim
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [timeRemaining, showFeedback, isSubmitting, isTabActive]);
 
   const handleAutoSubmit = async () => {
     if (isSubmitting || showFeedback) return;

@@ -38,6 +38,21 @@ export function CandidateInfoPage() {
         return;
       }
 
+      // Check session status and redirect appropriately
+      console.log('[CandidateInfoPage] Session status:', session.status);
+
+      if (session.status === 'completed') {
+        console.log('[CandidateInfoPage] → Interview completed, redirecting to results');
+        navigate('/candidate/results', { replace: true });
+        return;
+      }
+
+      if (session.status === 'in_progress') {
+        console.log('[CandidateInfoPage] → Interview in progress, redirecting to interview');
+        navigate('/candidate/interview', { replace: true });
+        return;
+      }
+
       // Check if candidate info already exists
       if (session.candidate_name && session.candidate_email && session.candidate_phone) {
         console.log('[CandidateInfoPage] ✓ Info complete - showing summary');

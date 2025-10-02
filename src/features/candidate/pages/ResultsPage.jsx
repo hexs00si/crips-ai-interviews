@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { GridBackground } from '@/components/ui/aceternity/grid-background';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
 import { InterviewResults } from '../components/InterviewResults';
@@ -51,7 +51,24 @@ export function ResultsPage() {
       }
 
       console.log('[ResultsPage] Found', responsesData?.length, 'responses');
-      setResponses(responsesData);
+
+      // Parse JSON fields if they are strings
+      const parsedResponses = responsesData.map(response => {
+        try {
+          return {
+            ...response,
+            question_metadata: typeof response.question_metadata === 'string'
+              ? JSON.parse(response.question_metadata)
+              : response.question_metadata
+          };
+        } catch (_e) {
+          console.warn('[ResultsPage] Could not parse question_metadata for response:', response.id);
+          return response;
+        }
+      });
+
+      console.log('[ResultsPage] Parsed responses:', parsedResponses);
+      setResponses(parsedResponses);
 
       // Check if all questions are answered
       const answeredCount = responsesData.filter(r => r.candidate_answer).length;
