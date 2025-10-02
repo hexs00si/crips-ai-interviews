@@ -144,10 +144,18 @@ export function ResultsPage() {
         });
       }
 
-      console.log('[ResultsPage] Results loaded successfully');
+      console.log('[ResultsPage] ========== RESULTS LOADED SUCCESSFULLY ==========');
+      console.log('[ResultsPage] Final state:', {
+        responsesCount: parsedResponses.length,
+        metricsCalculated: !!metrics,
+        summaryGenerated: !!summary,
+        sessionStatus: session.status
+      });
       setIsLoading(false);
     } catch (error) {
-      console.error('[ResultsPage] Load results error:', error);
+      console.error('[ResultsPage] ========== LOAD RESULTS ERROR ==========');
+      console.error('[ResultsPage] Error:', error);
+      console.error('[ResultsPage] Error message:', error.message);
       console.error('[ResultsPage] Error stack:', error.stack);
       setError(error.message);
       setIsLoading(false);
@@ -217,7 +225,7 @@ export function ResultsPage() {
                 </div>
               </div>
             </motion.div>
-          ) : (
+          ) : responses && metrics ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -245,6 +253,24 @@ export function ResultsPage() {
                   <span>Back to Home</span>
                 </button>
               </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-2xl p-8 max-w-2xl mx-auto text-center"
+            >
+              <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Results Not Ready</h3>
+              <p className="text-gray-600 mb-6">
+                Your interview results are still being processed. Please wait a moment and refresh.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                Refresh Page
+              </button>
             </motion.div>
           )}
 

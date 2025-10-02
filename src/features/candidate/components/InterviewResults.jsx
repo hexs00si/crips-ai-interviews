@@ -5,6 +5,35 @@ import { candidateInterview } from '@/data/candidateInterview';
 export function InterviewResults({ session, responses, summary, metrics }) {
   const { results } = candidateInterview;
 
+  console.log('[InterviewResults] Rendering with props:', {
+    session: !!session,
+    responsesCount: responses?.length,
+    summary: !!summary,
+    metrics: !!metrics,
+    metricsData: metrics
+  });
+
+  // Defensive checks
+  if (!results) {
+    console.error('[InterviewResults] Results config missing from candidateInterview data');
+    return <div>Configuration error: Results data missing</div>;
+  }
+
+  if (!session) {
+    console.error('[InterviewResults] Session prop is missing');
+    return <div>Error: Session data missing</div>;
+  }
+
+  if (!responses || responses.length === 0) {
+    console.error('[InterviewResults] Responses prop is missing or empty');
+    return <div>Error: No responses found</div>;
+  }
+
+  if (!metrics) {
+    console.error('[InterviewResults] Metrics prop is missing');
+    return <div>Error: Metrics data missing</div>;
+  }
+
   const getScoreColor = (percentage) => {
     if (percentage >= 85) return 'text-green-600';
     if (percentage >= 70) return 'text-blue-600';

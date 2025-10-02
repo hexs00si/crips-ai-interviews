@@ -198,7 +198,12 @@ export const candidateInterviewData = {
   // Interview results
   results: {
     title: 'Interview Complete!',
-    subtitle: 'Here\'s how you performed',
+    subtitle: 'Here\'s how you performed, {name}!',
+    labels: {
+      finalScore: 'Your Final Score',
+      percentage: 'Percentage',
+      outOf: 'out of'
+    },
     score: {
       label: 'Your Score',
       outOf: 'out of',
@@ -227,7 +232,10 @@ export const candidateInterviewData = {
       }
     },
     breakdown: {
-      title: 'Question Breakdown',
+      title: 'Performance Breakdown',
+      easy: 'Easy Questions',
+      medium: 'Medium Questions',
+      hard: 'Hard Questions',
       question: 'Question',
       yourAnswer: 'Your Answer',
       correctAnswer: 'Correct Answer',
@@ -237,6 +245,25 @@ export const candidateInterviewData = {
       timeTaken: 'Time Taken',
       seconds: 'seconds',
       viewExplanation: 'View Explanation'
+    },
+    stats: {
+      correct: 'Correct',
+      incorrect: 'Incorrect',
+      avgTime: 'Avg. Time',
+      accuracy: 'Accuracy'
+    },
+    summary: {
+      title: 'AI Assessment Summary'
+    },
+    review: {
+      title: 'Question Review',
+      yourAnswer: 'Your answer',
+      correctAnswer: 'Correct answer'
+    },
+    completion: {
+      message: 'Thank you for completing the interview! Your results have been recorded.',
+      downloadButton: 'Download Report',
+      nextSteps: 'The interviewer will review your results and contact you regarding next steps.'
     },
     aiSummary: {
       title: 'AI Assessment Summary',
