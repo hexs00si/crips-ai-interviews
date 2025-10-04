@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, User, Mail, Building, Lock, CheckCircle, AlertCircle } from "lucide-react";
@@ -9,6 +10,7 @@ import useAuth from "../hooks/useAuth";
 import { validateEmail, validatePassword, validateName, validateCompany, getPasswordStrength } from "@/lib/auth";
 
 export function SignupForm() {
+  const navigate = useNavigate();
   const { signUp, isLoading, error } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -338,12 +340,13 @@ export function SignupForm() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
-            <a
-              href="/login"
-              className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+            <button
+              type="button"
+              onClick={() => navigate('/auth')}
+              className="text-primary-600 hover:text-primary-700 font-medium transition-colors underline cursor-pointer"
             >
               Sign in here
-            </a>
+            </button>
           </p>
         </div>
       </form>
