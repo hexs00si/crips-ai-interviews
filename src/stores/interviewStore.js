@@ -101,12 +101,35 @@ const useInterviewStore = create(
 
           console.log('Fetched interviews:', data);
 
-          // Add default session counts (we'll fix this when sessions table exists)
-          const interviewsWithStats = (data || []).map((interview) => ({
-            ...interview,
-            sessionCount: 0,
-            completedCount: 0
-          }));
+          // Fetch session counts for each interview
+          const interviewsWithStats = await Promise.all(
+            (data || []).map(async (interview) => {
+              // Get all sessions for this interview
+              const { data: sessions, error: sessionsError } = await supabase
+                .from('interview_sessions')
+                .select('id, status')
+                .eq('interview_id', interview.id);
+
+              if (sessionsError) {
+                console.error('Error fetching sessions for interview:', interview.id, sessionsError);
+                return {
+                  ...interview,
+                  sessionCount: 0,
+                  completedCount: 0
+                };
+              }
+
+              // Calculate counts
+              const sessionCount = sessions?.length || 0;
+              const completedCount = sessions?.filter(s => s.status === 'completed').length || 0;
+
+              return {
+                ...interview,
+                sessionCount,
+                completedCount
+              };
+            })
+          );
 
           set({ interviews: interviewsWithStats, isLoading: false });
           return { success: true, data: interviewsWithStats };

@@ -11,9 +11,9 @@ export function InterviewStats({ interview, sessions }) {
   const inProgressSessions = sessions?.filter(s => s.status === 'in_progress').length || 0;
 
   // Calculate average score from completed sessions
-  const completedWithScores = sessions?.filter(s => s.status === 'completed' && s.score != null) || [];
+  const completedWithScores = sessions?.filter(s => s.status === 'completed' && s.total_score != null) || [];
   const averageScore = completedWithScores.length > 0
-    ? Math.round(completedWithScores.reduce((sum, s) => sum + s.score, 0) / completedWithScores.length)
+    ? Math.round(completedWithScores.reduce((sum, s) => sum + s.total_score, 0) / completedWithScores.length)
     : 0;
 
   const stats = [
