@@ -147,14 +147,16 @@ export function CandidatesTable({ sessions }) {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table - Desktop View (hidden on mobile) */}
       {filteredSessions.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500">No sessions match your filters</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
@@ -272,6 +274,116 @@ export function CandidatesTable({ sessions }) {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {filteredSessions.map((session) => {
+            const statusBadge = getStatusBadge(session.status);
+            const scoreBadge = getScoreBadge(session.total_score);
+            const isExpanded = expandedSummaries[session.id];
+            const hasSummary = session.ai_summary && session.ai_summary.trim().length > 0;
+
+            return (
+              <div
+                key={session.id}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                {/* Candidate Header */}
+                <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                      {session.candidate_name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">
+                        {session.candidate_name || 'Anonymous'}
+                      </p>
+                      <div className="flex items-center space-x-1 text-gray-600 mt-1">
+                        <Mail className="w-3 h-3 flex-shrink-0" />
+                        <span className="text-xs truncate">{session.candidate_email || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusBadge.color} flex-shrink-0 ml-2`}>
+                    {statusBadge.label}
+                  </span>
+                </div>
+
+                {/* Score and Dates Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {/* Score */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Award className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500 font-medium">Score</span>
+                    </div>
+                    <span className={`text-xl font-bold ${scoreBadge.color}`}>
+                      {scoreBadge.label}
+                    </span>
+                  </div>
+
+                  {/* Started Date */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500 font-medium">Started</span>
+                    </div>
+                    <span className="text-xs text-gray-700 font-medium">
+                      {formatDate(session.created_at)}
+                    </span>
+                  </div>
+
+                  {/* Completed Date */}
+                  {session.completed_at && (
+                    <div className="bg-gray-50 rounded-lg p-3 col-span-2">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs text-gray-500 font-medium">Completed</span>
+                      </div>
+                      <span className="text-xs text-gray-700 font-medium">
+                        {formatDate(session.completed_at)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Summary */}
+                {hasSummary && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-start space-x-2">
+                      <FileText className="w-4 h-4 text-purple-500 mt-1 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-500 mb-1">AI Summary</p>
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {isExpanded ? session.ai_summary : truncateText(session.ai_summary, 100)}
+                        </p>
+                        {session.ai_summary.length > 100 && (
+                          <button
+                            onClick={() => toggleSummary(session.id)}
+                            className="mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <EyeOff className="w-3 h-3" />
+                                <span>Show Less</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3 h-3" />
+                                <span>Show More</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </>
       )}
 
       {/* Results Count */}
