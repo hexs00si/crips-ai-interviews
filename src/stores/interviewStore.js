@@ -101,35 +101,50 @@ const useInterviewStore = create(
 
           console.log('Fetched interviews:', data);
 
-          // Fetch session counts for each interview
-          const interviewsWithStats = await Promise.all(
-            (data || []).map(async (interview) => {
-              // Get all sessions for this interview
-              const { data: sessions, error: sessionsError } = await supabase
-                .from('interview_sessions')
-                .select('id, status')
-                .eq('interview_id', interview.id);
+          // Optimize: Fetch all sessions in a single query instead of N+1 queries
+          let interviewsWithStats = [];
 
-              if (sessionsError) {
-                console.error('Error fetching sessions for interview:', interview.id, sessionsError);
-                return {
-                  ...interview,
-                  sessionCount: 0,
-                  completedCount: 0
-                };
-              }
+          if (data && data.length > 0) {
+            // Get all interview IDs
+            const interviewIds = data.map(i => i.id);
 
-              // Calculate counts
-              const sessionCount = sessions?.length || 0;
-              const completedCount = sessions?.filter(s => s.status === 'completed').length || 0;
+            // Fetch ALL sessions for ALL interviews in ONE query
+            const { data: allSessions, error: sessionsError } = await supabase
+              .from('interview_sessions')
+              .select('id, interview_id, status')
+              .in('interview_id', interviewIds);
 
-              return {
+            if (sessionsError) {
+              console.error('Error fetching sessions:', sessionsError);
+              // Fallback to 0 counts if session fetch fails
+              interviewsWithStats = data.map(interview => ({
                 ...interview,
-                sessionCount,
-                completedCount
-              };
-            })
-          );
+                sessionCount: 0,
+                completedCount: 0
+              }));
+            } else {
+              // Group sessions by interview_id and calculate counts client-side
+              const sessionsByInterview = (allSessions || []).reduce((acc, session) => {
+                if (!acc[session.interview_id]) {
+                  acc[session.interview_id] = { total: 0, completed: 0 };
+                }
+                acc[session.interview_id].total += 1;
+                if (session.status === 'completed') {
+                  acc[session.interview_id].completed += 1;
+                }
+                return acc;
+              }, {});
+
+              // Map interviews with their session counts
+              interviewsWithStats = data.map(interview => ({
+                ...interview,
+                sessionCount: sessionsByInterview[interview.id]?.total || 0,
+                completedCount: sessionsByInterview[interview.id]?.completed || 0
+              }));
+            }
+          } else {
+            interviewsWithStats = [];
+          }
 
           set({ interviews: interviewsWithStats, isLoading: false });
           return { success: true, data: interviewsWithStats };

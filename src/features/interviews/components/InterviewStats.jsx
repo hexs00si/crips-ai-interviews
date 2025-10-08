@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Users, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import { interviewData } from '@/data/interviews';
 
-export function InterviewStats({ interview, sessions }) {
+export function InterviewStats({ interview, sessions }) { // eslint-disable-line no-unused-vars
   const { details } = interviewData;
 
   // Calculate statistics
