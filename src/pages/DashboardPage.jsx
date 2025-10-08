@@ -20,11 +20,9 @@ export function DashboardPage() {
 
   const interviewStats = getInterviewStats();
 
-  // Load interviews once on mount only - no re-renders on tab switch
+  // Load interviews on mount - always refresh to get latest session counts
   useEffect(() => {
-    if (interviews.length === 0 && !isLoading) {
-      loadInterviews();
-    }
+    loadInterviews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - only run once on mount
 

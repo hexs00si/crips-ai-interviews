@@ -114,6 +114,9 @@ const useInterviewStore = create(
               .select('id, interview_id, status')
               .in('interview_id', interviewIds);
 
+            console.log('📊 Fetched sessions for all interviews:', allSessions);
+            console.log('📊 Interview IDs being queried:', interviewIds);
+
             if (sessionsError) {
               console.error('Error fetching sessions:', sessionsError);
               // Fallback to 0 counts if session fetch fails
@@ -136,16 +139,24 @@ const useInterviewStore = create(
               }, {});
 
               // Map interviews with their session counts
-              interviewsWithStats = data.map(interview => ({
-                ...interview,
-                sessionCount: sessionsByInterview[interview.id]?.total || 0,
-                completedCount: sessionsByInterview[interview.id]?.completed || 0
-              }));
+              interviewsWithStats = data.map(interview => {
+                const counts = sessionsByInterview[interview.id] || { total: 0, completed: 0 };
+                console.log(`📊 Interview "${interview.title}" (${interview.id}):`, {
+                  sessionCount: counts.total,
+                  completedCount: counts.completed
+                });
+                return {
+                  ...interview,
+                  sessionCount: counts.total,
+                  completedCount: counts.completed
+                };
+              });
             }
           } else {
             interviewsWithStats = [];
           }
 
+          console.log('✅ Final interviews with stats:', interviewsWithStats);
           set({ interviews: interviewsWithStats, isLoading: false });
           return { success: true, data: interviewsWithStats };
         } catch (error) {
