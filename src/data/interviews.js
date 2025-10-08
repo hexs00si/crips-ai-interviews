@@ -189,6 +189,7 @@ export const interviewData = {
         score: "Score",
         started: "Started",
         completed: "Completed",
+        aiSummary: "AI Summary",
         actions: "Actions"
       }
     },

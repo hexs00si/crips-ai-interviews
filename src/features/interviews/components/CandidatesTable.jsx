@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
-import { Search, Filter, ChevronDown, Mail, Calendar, Award } from 'lucide-react';
+import { Search, Filter, ChevronDown, Mail, Calendar, Award, FileText, Eye, EyeOff } from 'lucide-react';
 import { interviewData } from '@/data/interviews';
 
 export function CandidatesTable({ sessions }) {
@@ -8,6 +8,7 @@ export function CandidatesTable({ sessions }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [expandedSummaries, setExpandedSummaries] = useState({});
 
   // Filter and sort sessions
   const filteredSessions = useMemo(() => {
@@ -34,7 +35,7 @@ export function CandidatesTable({ sessions }) {
         filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
       case 'score':
-        filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+        filtered.sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
         break;
       case 'name':
         filtered.sort((a, b) => (a.candidate_name || '').localeCompare(b.candidate_name || ''));
@@ -66,11 +67,26 @@ export function CandidatesTable({ sessions }) {
     return statusMap[status] || statusMap.not_started;
   };
 
-  const getScoreBadge = (score) => {
-    if (score == null) return { color: 'text-gray-400', label: 'N/A' };
-    if (score >= 80) return { color: 'text-green-600', label: `${score}%` };
-    if (score >= 60) return { color: 'text-yellow-600', label: `${score}%` };
-    return { color: 'text-red-600', label: `${score}%` };
+  const getScoreBadge = (totalScore) => {
+    if (totalScore == null) return { color: 'text-gray-400', label: 'N/A' };
+    // Convert total_score (0-60) to percentage for color coding
+    const percentage = Math.round((totalScore / 60) * 100);
+    if (percentage >= 80) return { color: 'text-green-600', label: `${totalScore}/60` };
+    if (percentage >= 60) return { color: 'text-yellow-600', label: `${totalScore}/60` };
+    return { color: 'text-red-600', label: `${totalScore}/60` };
+  };
+
+  const toggleSummary = (sessionId) => {
+    setExpandedSummaries(prev => ({
+      ...prev,
+      [sessionId]: !prev[sessionId]
+    }));
+  };
+
+  const truncateText = (text, maxLength = 100) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
   return (
@@ -159,12 +175,17 @@ export function CandidatesTable({ sessions }) {
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                   {details.sessions.columns.completed}
                 </th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                  {details.sessions.columns.aiSummary}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredSessions.map((session) => {
                 const statusBadge = getStatusBadge(session.status);
-                const scoreBadge = getScoreBadge(session.score);
+                const scoreBadge = getScoreBadge(session.total_score);
+                const isExpanded = expandedSummaries[session.id];
+                const hasSummary = session.ai_summary && session.ai_summary.trim().length > 0;
 
                 return (
                   <tr
@@ -210,6 +231,40 @@ export function CandidatesTable({ sessions }) {
                       <span className="text-sm text-gray-600">
                         {formatDate(session.completed_at)}
                       </span>
+                    </td>
+                    <td className="py-4 px-4 max-w-md">
+                      {hasSummary ? (
+                        <div className="space-y-2">
+                          <div className="flex items-start space-x-2">
+                            <FileText className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                {isExpanded ? session.ai_summary : truncateText(session.ai_summary, 100)}
+                              </p>
+                              {session.ai_summary.length > 100 && (
+                                <button
+                                  onClick={() => toggleSummary(session.id)}
+                                  className="mt-1 text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1"
+                                >
+                                  {isExpanded ? (
+                                    <>
+                                      <EyeOff className="w-3 h-3" />
+                                      <span>Show Less</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Eye className="w-3 h-3" />
+                                      <span>Show More</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400 italic">Not available</span>
+                      )}
                     </td>
                   </tr>
                 );
