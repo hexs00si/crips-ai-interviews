@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { GridBackground } from '@/components/ui/aceternity/grid-background';
 import { BackgroundBeams } from '@/components/ui/aceternity/background-beams';
-import { ArrowRight, Users, Key } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * DualAuthLayout - Split screen authentication layout
@@ -17,10 +17,10 @@ export function DualAuthLayout({ leftContent, rightContent, mode = 'both' }) {
       </GridBackground>
 
       {/* Content Container */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12 pt-20 md:pt-12">
         <div className="w-full max-w-6xl mx-auto">
           {/* Grid Layout - 2 columns on desktop, 1 on mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Interviewer Section */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -28,19 +28,6 @@ export function DualAuthLayout({ leftContent, rightContent, mode = 'both' }) {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className={`${mode === 'candidate' ? 'hidden lg:block opacity-50' : ''}`}
             >
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-                  <Users className="w-8 h-8 text-primary-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  For Interviewers
-                </h2>
-                <p className="text-white/80">
-                  Create and manage AI-powered interviews
-                </p>
-              </div>
-
               {/* Card */}
               <div className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-2xl p-8">
                 {leftContent}
@@ -84,19 +71,6 @@ export function DualAuthLayout({ leftContent, rightContent, mode = 'both' }) {
               transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
               className={`${mode === 'interviewer' ? 'hidden lg:block opacity-50' : ''}`}
             >
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                  <Key className="w-8 h-8 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  For Candidates
-                </h2>
-                <p className="text-white/80">
-                  Enter your access code to start the interview
-                </p>
-              </div>
-
               {/* Card */}
               <div className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-2xl p-8">
                 {rightContent}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
-import { Key, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { candidateInterview } from '@/data/candidateInterview';
 
 export function AccessCodeForm({ onSubmit }) {
@@ -74,26 +74,8 @@ export function AccessCodeForm({ onSubmit }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-            <Key className="w-8 h-8 text-primary-600" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            {accessCode.title}
-          </h2>
-          <p className="text-gray-600">
-            {accessCode.subtitle}
-          </p>
-        </div>
-
-        {/* Code Input */}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Code Input */}
         <div className="space-y-2">
           <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700">
             {accessCode.inputLabel}
@@ -147,16 +129,15 @@ export function AccessCodeForm({ onSubmit }) {
           )}
         </button>
 
-        {/* Back Button */}
-        <div className="text-center">
-          <a
-            href="/"
-            className="text-sm text-gray-600 hover:text-primary-600 transition-colors"
-          >
-            {accessCode.backButton}
-          </a>
-        </div>
-      </form>
-    </motion.div>
+      {/* Back Button */}
+      <div className="text-center">
+        <a
+          href="/"
+          className="text-sm text-gray-600 hover:text-primary-600 transition-colors"
+        >
+          {accessCode.backButton}
+        </a>
+      </div>
+    </form>
   );
 }

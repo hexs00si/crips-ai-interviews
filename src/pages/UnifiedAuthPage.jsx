@@ -50,18 +50,28 @@ export function UnifiedAuthPage() {
     <DualAuthLayout
       mode="both"
       leftContent={
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-            Interviewer Login
-          </h3>
-          <p className="text-sm text-gray-600 mb-6 text-center">
-            Sign in to manage your interviews
-          </p>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Interviewer Login
+            </h3>
+            <p className="text-sm text-gray-600">
+              Sign in to manage your interviews
+            </p>
+          </div>
           <LoginFormContent />
         </div>
       }
       rightContent={
-        <div>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Enter Your Interview Code
+            </h3>
+            <p className="text-sm text-gray-600">
+              Enter the access code provided by your interviewer to begin
+            </p>
+          </div>
           <AccessCodeForm onSubmit={handleAccessCodeSubmit} />
         </div>
       }

@@ -90,7 +90,10 @@ export class CandidateService {
   }
 
   /**
-   * Create or retrieve existing interview session
+   * Create a new interview session for each candidate
+   * IMPORTANT: Multiple candidates can use the same access code
+   * Each candidate gets their own unique session
+   * Session resumption is handled client-side via localStorage
    * @param {string} interviewId - Interview ID
    * @returns {Promise<{success: boolean, session?: object, isNewSession?: boolean, error?: string}>}
    */
@@ -103,39 +106,11 @@ export class CandidateService {
         };
       }
 
-      // Check for existing session
-      const { data: existingSession, error: sessionCheckError } = await supabase
-        .from('interview_sessions')
-        .select('*')
-        .eq('interview_id', interviewId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      console.log('[CandidateService] Creating new session for interview:', interviewId);
 
-      if (sessionCheckError && sessionCheckError.code !== 'PGRST116') {
-        throw sessionCheckError;
-      }
-
-      // If session exists and is completed, don't allow restart
-      if (existingSession && existingSession.status === 'completed') {
-        return {
-          success: false,
-          error: 'This interview has already been completed.',
-          session: existingSession
-        };
-      }
-
-      // Return existing session if found and not expired
-      if (existingSession && existingSession.status !== 'expired') {
-        return {
-          success: true,
-          session: existingSession,
-          isNewSession: false,
-          message: 'Welcome back! You have an existing session.'
-        };
-      }
-
-      // Create new session
+      // ALWAYS create a new session for each access code validation
+      // This allows multiple candidates to use the same access code
+      // Session resumption is handled client-side via candidateStore + localStorage
       const { data: newSession, error: createError } = await supabase
         .from('interview_sessions')
         .insert({
@@ -151,6 +126,8 @@ export class CandidateService {
       if (createError) {
         throw createError;
       }
+
+      console.log('[CandidateService] New session created:', newSession.id);
 
       return {
         success: true,
