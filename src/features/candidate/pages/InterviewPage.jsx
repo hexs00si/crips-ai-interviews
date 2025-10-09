@@ -155,8 +155,18 @@ export function InterviewPage() {
     }
   };
 
-  const handleResumeFromTabSwitch = () => {
+  const handleResumeFromTabSwitch = async () => {
+    // User explicitly clicked "Resume Interview" button
+    console.log('[InterviewPage] Candidate manually resumed interview');
+
+    // Update session status back to in_progress
+    await updateSessionStatus('in_progress');
+
+    // Close the modal
     setShowTabWarning(false);
+
+    // Timer will automatically resume via the InterviewQuestionView component
+    // when isTabActive becomes true
   };
 
   if (!session || !interview) {
@@ -256,6 +266,7 @@ export function InterviewPage() {
       <TabSwitchWarningModal
         isOpen={showTabWarning && !isTabActive}
         onResume={handleResumeFromTabSwitch}
+        tabSwitchCount={tabSwitchCount}
       />
     </div>
   );

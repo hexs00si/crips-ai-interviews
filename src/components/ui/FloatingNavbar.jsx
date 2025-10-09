@@ -16,6 +16,9 @@ export function FloatingNavbar({ className }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Hide navbar during active interview
+  const isInterviewActive = location.pathname === '/candidate/interview';
+
   // Handle scroll behavior
   useEffect(() => {
     const handleScroll = () => {
@@ -71,6 +74,11 @@ export function FloatingNavbar({ className }) {
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
   };
+
+  // Don't render navbar at all during active interview
+  if (isInterviewActive) {
+    return null;
+  }
 
   return (
     <>
